@@ -51,6 +51,37 @@ function App() {
     setIsLoading(false);
   };
 
+  const handleDownload = async () => {
+    if (!documentContent) {
+      alert('No document to download.');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        'http://localhost:8000/api/download-pdf/',
+        { document_content: documentContent },
+        { responseType: 'blob' } // Important: responseType must be 'blob'
+      );
+
+      // Create a blob from the response data
+      const file = new Blob([response.data], { type: 'application/pdf' });
+
+      // Create a link element, set its href to the blob, and click it to trigger download
+      const fileURL = URL.createObjectURL(file);
+      const link = document.createElement('a');
+      link.href = fileURL;
+      link.setAttribute('download', 'legal_document.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(fileURL); // Clean up the URL object
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Failed to download PDF. Please check the console for details.');
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -84,6 +115,7 @@ function App() {
             <div className="preview-content">
               <ReactMarkdown>{documentContent}</ReactMarkdown>
             </div>
+            <button onClick={handleDownload}>Download as PDF</button>
           </div>
         )}
       </main>
