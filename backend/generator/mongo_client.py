@@ -13,6 +13,9 @@ def get_db():
     db = client.get_default_database() # The database name is part of the connection string
     return db
 
+db = get_db()
+conversations_collection = db['conversations']
+
 def get_all_conversations():
     """Fetches all conversations, returning the id, title, created_at, and latest_document."""
     try:

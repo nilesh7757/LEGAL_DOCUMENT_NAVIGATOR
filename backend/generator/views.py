@@ -16,6 +16,7 @@ import cloudinary.uploader
 
 from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate, AIMessagePromptTemplate
 @api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser])
 def chat(request):
     from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate, AIMessagePromptTemplate
     """
@@ -29,6 +30,16 @@ def chat(request):
         return Response({'error': 'Messages are required'}, status=400)
 
     try:
+        signature_file = request.FILES.get('signature')
+        if signature_file:
+            try:
+                upload_result = cloudinary.uploader.upload(signature_file)
+                signature_url = upload_result['secure_url']
+                # Append a system message to the user's message
+                messages[-1]['text'] += f"\n\n(System: The user has uploaded a signature. Please place it in the appropriate section of the document using the following markdown: ![Signature]({signature_url}))"
+            except Exception as e:
+                return Response({'error': f'Error uploading signature: {e}'}, status=500)
+
         genai.configure(api_key=settings.GEMINI_API_KEY)
 
         system_instruction_text = """You are a helpful legal assistant. Your goal is to help the user create a legal document.
@@ -37,7 +48,9 @@ def chat(request):
 - The document **must** be in well-structured **Markdown format**. Use headings (`#`, `##`), lists (`*`, `-`), bold (`**text**`), and italics (`*text`*) to create a professional and readable document.
 - When you are ready to generate the document, provide it in a JSON format like this: ```json{"type": "document", "text": "...your Markdown document here..."}```.
 - If the user asks to update some information, you must look for the previous document you generated in the conversation history. You will use that document as the basis for your new version.
-- You must then regenerate the **entire** document, incorporating the user's requested changes, and provide it again in the same JSON format. Do not just provide the updated line or a confirmation message."""
+- You must then regenerate the **entire** document, incorporating the user's requested changes, and provide it again in the same JSON format. Do not just provide the updated line or a confirmation message.
+- **Signature Handling:** If the user uploads a signature, you will see a system message like `(System: The user has uploaded a signature...)` with a URL. When you generate the document, you **must** include this signature at the appropriate signature lines using the provided URL in the correct markdown format: `![Signature](URL)`. **Do NOT acknowledge the system message about the signature upload in your conversational response.**
+"""
 
         model = genai.GenerativeModel(
             'models/gemini-2.5-flash-lite',
