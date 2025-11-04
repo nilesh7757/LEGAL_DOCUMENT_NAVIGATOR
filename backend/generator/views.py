@@ -14,10 +14,10 @@ from django.core.files.storage import FileSystemStorage
 from django.utils.crypto import get_random_string
 import os
 
-from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate, AIMessagePromptTemplate
 
 @api_view(['POST'])
 def chat(request):
+    from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate, AIMessagePromptTemplate
     """
     API endpoint for the conversational legal document generator.
     """
