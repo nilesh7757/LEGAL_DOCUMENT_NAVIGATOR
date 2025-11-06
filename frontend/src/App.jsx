@@ -4,8 +4,10 @@ import Navbar from "./Components/Navbar/Navbar";
 import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 
 
+import LawyerProfile from "./pages/LawyerProfile";
 import Lawyers from "./pages/Lawyers";
 import DocumentAnalyzer from "./pages/DocumentAnalyzer";
 import LawyerConnect from "./pages/LawyerConnect";
@@ -33,9 +35,11 @@ function AppContent() {
           <Route path="/my-documents" element={<MyDocuments />} />
 
 
+          <Route path="/lawyer-profile/:id" element={<LawyerProfile />} />
           <Route path="/lawyers" element={<Lawyers />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </main>
     </>
