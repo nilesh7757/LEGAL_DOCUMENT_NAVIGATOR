@@ -1,13 +1,19 @@
 import React, { useState } from "react";
 import { User, Mail, Key } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import axios from '../api/axios'; // Import axios
+import toast from 'react-hot-toast'; // Import toast
 
 const Signup = () => {
+  const navigate = useNavigate(); // Initialize useNavigate
   const [formData, setFormData] = useState({
     name: '',
     username: '',
     email: '',
-    password: ''
+    password: '',
+    password2: ''
   });
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const handleInputChange = (e) => {
     setFormData({
@@ -16,13 +22,41 @@ const Signup = () => {
     });
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent default form submission
+    setLoading(true);
+
+    if (formData.password !== formData.password2) {
+      toast.error("Passwords do not match.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.post('auth/signup/', formData); // API endpoint
+      toast.success(response.data.message);
+      if (response.data.requires_verification) {
+        // Redirect to a verification page or show a message
+        navigate('/verify-otp', { state: { email: response.data.email } }); // Redirect to OTP verification page
+      } else {
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      console.error('Signup error details:', error.response?.data); // Log full error details
+      toast.error(error.response?.data?.error || 'Signup failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleGoogleSignup = () => {
-    console.log('Google signup clicked');
-    // Here you would integrate with Google OAuth
+  const handleGoogleSignup = async () => {
+    setLoading(true);
+    toast.error('Google OAuth integration is required for this feature. The current dummy token is invalid.');
+    setLoading(false);
+    // In a real application, you would use a Google OAuth client library
+    // to get an ID token from Google, then send it to your backend.
+    // For now, we'll display a message.
   };
 
   const handleGithubSignup = () => {
@@ -97,6 +131,19 @@ const Signup = () => {
               />
             </div>
 
+            {/* Confirm Password Input */}
+            <div className="relative">
+              <Key className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="password"
+                name="password2"
+                placeholder="Confirm Password"
+                value={formData.password2}
+                onChange={handleInputChange}
+                className="w-full pl-12 pr-4 py-4 bg-gray-50/80 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 text-gray-700 placeholder-gray-400"
+              />
+            </div>
+
             {/* Submit Button */}
             <button
               type="button"
@@ -108,8 +155,9 @@ const Signup = () => {
           </div>
 
           {/* Social Sign-in Buttons */}
-          <div className="grid grid-cols-2 gap-3 mt-8">
+          <div className="grid grid-cols-1 gap-3 mt-8">
             <button
+              type="button"
               onClick={handleGoogleSignup}
               className="flex items-center justify-center space-x-2 px-4 py-3 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md group"
             >
@@ -122,18 +170,6 @@ const Signup = () => {
                 </svg>
               </div>
               <span className="text-gray-700 font-medium text-sm">Signup with Google</span>
-            </button>
-            
-            <button
-              onClick={handleGithubSignup}
-              className="flex items-center justify-center space-x-2 px-4 py-3 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md group"
-            >
-              <div className="w-5 h-5">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-gray-900">
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                </svg>
-              </div>
-              <span className="text-gray-700 font-medium text-sm">Signup with Github</span>
             </button>
           </div>
 

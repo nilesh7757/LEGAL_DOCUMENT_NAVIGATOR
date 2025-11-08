@@ -1,0 +1,91 @@
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import axios from '../api/axios';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+
+const AuthContext = createContext(null);
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const accessToken = localStorage.getItem('access_token');
+      if (accessToken) {
+        try {
+          // Validate token and fetch user profile
+          const response = await axios.get('auth/profile/', {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          });
+          setUser(response.data);
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Failed to load user profile:', error);
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      }
+      setLoading(false);
+    };
+
+    loadUser();
+  }, []);
+
+  const login = async (email, password) => {
+    setLoading(true);
+    try {
+      const response = await axios.post('auth/login/', { email, password });
+      const { access, refresh, user: userData } = response.data.tokens; // Assuming tokens are nested under 'tokens'
+      
+      localStorage.setItem('access_token', access);
+      localStorage.setItem('refresh_token', refresh);
+      setUser(userData);
+      setIsAuthenticated(true);
+      toast.success('Login successful!');
+      navigate('/'); // Redirect to home or dashboard
+      return true;
+    } catch (error) {
+      console.error('Login failed:', error);
+      toast.error(error.response?.data?.error || 'Login failed.');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    setLoading(true);
+    try {
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (refreshToken) {
+        await axios.post('auth/logout/', { refresh: refreshToken });
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Even if logout API fails, clear local storage
+    } finally {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      setUser(null);
+      setIsAuthenticated(false);
+      toast.success('Logged out successfully!');
+      navigate('/login');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout, setUser, setIsAuthenticated }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => useContext(AuthContext);

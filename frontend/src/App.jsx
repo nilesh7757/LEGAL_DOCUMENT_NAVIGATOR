@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import VerifyOtp from "./pages/VerifyOtp"; // Added this import
 
 
 import LawyerProfile from "./pages/LawyerProfile";
@@ -13,6 +14,7 @@ import DocumentAnalyzer from "./pages/DocumentAnalyzer";
 import LawyerConnect from "./pages/LawyerConnect";
 import MyDocuments from "./pages/MyDocuments";
 import DocumentCreation from "./pages/DocumentCreation";
+import DocumentVersions from "./pages/DocumentVersions"; // Added this import
 
 function AppContent() {
   const location = useLocation();
@@ -28,9 +30,11 @@ function AppContent() {
         <main className={shouldShowNavbar ? "pt-20 bg-gray-50" : "bg-gray-50"}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/document-analyzer/:id" element={<DocumentAnalyzer />} />
+          <Route path="/document-analyser" element={<DocumentAnalyzer />} /> {/* Added this route */}
+          <Route path="/document-analyser/:id" element={<DocumentAnalyzer />} />
           <Route path="/document-creation" element={<DocumentCreation />} />
           <Route path="/document-creation/:id" element={<DocumentCreation />} />
+          <Route path="/document-versions/:id" element={<DocumentVersions />} /> {/* Added this route */}
           <Route path="/lawyer-connect" element={<LawyerConnect />} />
           <Route path="/my-documents" element={<MyDocuments />} />
 
@@ -39,6 +43,7 @@ function AppContent() {
           <Route path="/lawyers" element={<Lawyers />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} /> {/* Added this route */}
           <Route path="/profile" element={<Profile />} />
         </Routes>
       </main>
@@ -47,12 +52,15 @@ function AppContent() {
 }
 
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './context/AuthContext'; // Import AuthProvider
 
 function App() {
   return (
     <Router>
       <Toaster position="bottom-right" />
-      <AppContent />
+      <AuthProvider> {/* Wrap AppContent with AuthProvider */}
+        <AppContent />
+      </AuthProvider>
     </Router>
   );
 }

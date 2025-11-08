@@ -118,7 +118,7 @@ const MyDocuments = () => {
                     <span>Edit</span>
                   </button>
                   <button
-                    onClick={() => navigate(`/document-analyzer/${conv._id}`)}
+                    onClick={() => navigate(`/document-versions/${conv._id}`)}
                     className="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center space-x-2 text-sm"
                   >
                     <Eye className="w-4 h-4" />

@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/Components/ui/button";
 import NavItem from "./Navitem";
-import { User, Menu, X } from "lucide-react";
+import { User, Menu, X, LogOut } from "lucide-react"; // Added LogOut icon
+import { useAuth } from '../../context/AuthContext'; // Import useAuth
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const isSignedIn = false; // mock auth state
+  const { isAuthenticated, user, logout } = useAuth(); // Use AuthContext
 
       const navLinks = [
       { to: "/", label: "Home" },
@@ -14,7 +15,6 @@ const Navbar = () => {
       { to: "/document-creation", label: "Document Creation" },
       { to: "/lawyer-connect", label: "Lawyer Connect" },
       { to: "/my-documents", label: "My Documents" },
-      { to: "/profile", label: "Profile" },
     ];
   
     return (
@@ -36,22 +36,37 @@ const Navbar = () => {
   
             {/* Desktop Auth/Profile */}
             <div className="hidden md:flex items-center space-x-4">
-              {isSignedIn ? (
-                <Link to="/profile">
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition cursor-pointer">
-                    <User className="w-6 h-6 text-gray-700" />
-                  </button>
-                </Link>            ) : (
-              <Link to="/login">
-                <Button
-                  variant="outline"
-                  className="px-4 outline-1 rounded-lg hover:bg-black hover:text-white cursor-pointer"
-                >
-                  Login
-                </Button>
-              </Link>
-            )}
-          </div>
+              {isAuthenticated ? (
+                <>
+                  <Link to="/profile">
+                    <button className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition cursor-pointer">
+                      {user && user.profile_picture ? (
+                        <img src={user.profile_picture} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        <User className="w-6 h-6 text-gray-700" />
+                      )}
+                    </button>
+                  </Link>
+                  <Button
+                    onClick={logout}
+                    variant="outline"
+                    className="px-4 outline-1 rounded-lg hover:bg-black hover:text-white cursor-pointer flex items-center space-x-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
+                  </Button>
+                </>
+              ) : (
+                <Link to="/login">
+                  <Button
+                    variant="outline"
+                    className="px-4 outline-1 rounded-lg hover:bg-black hover:text-white cursor-pointer"
+                  >
+                    Login
+                  </Button>
+                </Link>
+              )}
+            </div>
 
           {/* Mobile Hamburger */}
           <div className="md:hidden">
@@ -95,12 +110,30 @@ const Navbar = () => {
 
         {/* Sidebar Auth/Profile */}
         <div className="p-4 border-t mt-auto">
-          {isSignedIn ? (
-            <Link to="/profile" onClick={() => setIsOpen(false)}>
-              <button className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition cursor-pointer">
-                <User className="w-6 h-6 text-gray-700" />
-              </button>
-            </Link>
+          {isAuthenticated ? (
+            <>
+              <Link to="/profile" onClick={() => setIsOpen(false)} className="flex items-center space-x-3 mb-4">
+                <button className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition cursor-pointer">
+                  {user && user.profile_picture ? (
+                    <img src={user.profile_picture} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <User className="w-6 h-6 text-gray-700" />
+                  )}
+                </button>
+                <span className="text-gray-800 font-medium">{user?.name || user?.username || 'Profile'}</span>
+              </Link>
+              <Button
+                onClick={() => {
+                  logout();
+                  setIsOpen(false);
+                }}
+                variant="outline"
+                className="w-full outline-1 rounded-lg hover:bg-black hover:text-white cursor-pointer flex items-center justify-center space-x-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </Button>
+            </>
           ) : (
             <Link to="/login" onClick={() => setIsOpen(false)}>
               <Button

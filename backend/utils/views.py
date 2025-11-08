@@ -32,7 +32,9 @@ def _generate_pdf_from_markdown(markdown_content):
     Helper function to convert markdown string to a PDF file response.
     This function is used by the download_pdf view.
     """
+    print(f"Markdown content received: {markdown_content[:500]}...") # Log first 500 chars
     html_content = markdown.markdown(markdown_content)
+    print(f"HTML content generated: {html_content[:500]}...") # Log first 500 chars
 
     pdf_style_css = """
         @page {
@@ -167,6 +169,7 @@ def upload_signature(request):
 
     try:
         upload_result = cloudinary.uploader.upload(file_obj)
+        print(f"Cloudinary upload result: {upload_result}") # Add this line for debugging
         return Response({'url': upload_result['secure_url']}, status=201)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
