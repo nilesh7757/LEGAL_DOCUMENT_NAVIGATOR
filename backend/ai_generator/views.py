@@ -68,9 +68,9 @@ def chat(request):
         print(f"Model response text: {response.text}")
 
         # The response from the model is just text, so we need to parse it to see
-        # if it is a question or the final document.
+        # if it is a question or the  final document.
         # For now, we will assume that if the response contains "```json", it is the final document in JSON format.
-        # Otherwise, it is a question.
+        # Otherwise, it is a question. 
         if '```json' in response.text:
             # It's the final document
             # Extract the JSON part from the response
@@ -84,4 +84,4 @@ def chat(request):
     except Exception as e:
         print(f"Error in chat view: {e}")
         print(f"Type of error: {type(e)}")
-        return Response({'error': str(e)}, status=500)
+        return Response({'Error': str(e)}, status=500)
